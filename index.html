@@ -1,0 +1,172 @@
+<html ng-app="ionicApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title> museums </title>
+    <link href="css/ionic.css" rel="stylesheet">
+    <link href="css/ionic.material.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="js/ionic.bundle.js"></script>
+    <script src="mainjs.js"></script>
+
+    <script src="http://maps.googleapis.com/maps/api/js?v=3&libraries=geometry"></script>
+
+    <script src="mapjs.js"></script>
+    <script src="museumsJSON.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="js/ionic.material.min.js"></script>
+</head>
+
+<body ng-controller="MainCtrl" onload="initialize()">
+    <style>
+        .previous-title,
+        .default-title {
+            display: none !important;
+        }
+        
+        .menu .bar.bar-header.expanded {
+            background-image: url('img/cov1er.jpg');
+            background-size: 100%;
+            background-position: 0%;
+            transition: all .5s ease-in-out;
+            background-color: #3B6471;
+        }
+        
+        ion-side-menu .scroll .list,
+        ion-side-menu .content .positive {
+            color: #444444 !important;
+            background-color: rgba(236, 232, 232, 0.6)
+        }
+        
+        .bar.bar-positive {
+            background-color: #30BBAC;
+        }
+    </style>
+    <ion-nav-view></ion-nav-view>
+
+    <script id="templates/event-menu.html" type="text/ng-template">
+        <ion-side-menus enable-menu-with-back-views="false">
+
+            <ion-side-menu-content>
+                <ion-nav-bar class="bar-positive">
+                    <ion-nav-back-button>
+                    </ion-nav-back-button>
+
+                    <ion-nav-buttons side="left">
+                        <button class="button button-icon button-clear ion-navicon" menu-toggle="left">
+                        </button>
+                    </ion-nav-buttons>
+                </ion-nav-bar>
+
+                <ion-nav-view name="menuContent"></ion-nav-view>
+            </ion-side-menu-content>
+
+            <ion-side-menu side="left">
+                <ion-header-bar class="expanded bar bar-header disable-user-behavior">
+                    <img src="img/logo.png" class="avatar motion spin fade">
+                    <div class="menu-bottom">
+                        CultMenu
+                    </div>
+                </ion-header-bar>
+
+                <ion-content class="stable-bg has-expanded-header scroll-content ionic-scroll  has-header ">
+                    <ul class="list ">
+                        <!-- Note each link has the 'menu-close' attribute so the menu auto closes when clicking on one of these links -->
+                        <a href="#/event/Welcome " class="item " menu-close>Near Me</a>
+                        <a href="#/event/museumList " class="item " menu-close>All Museums</a>
+                    </ul>
+                </ion-content>
+            </ion-side-menu>
+
+        </ion-side-menus>
+    </script>
+
+    <script id="templates/home.html" type="text/ng-template">
+        <ion-view view-title="Near Me">
+            <ion-content class="" data-tap-disabled="true">
+                <div id="googleMap" style="width:100%;height:100%;"></div>
+            </ion-content>
+        </ion-view>
+    </script>
+
+
+
+    <script id="templates/museumList.html" type="text/ng-template">
+        <ion-view view-title="All Museums">
+            <ion-content>
+                <div class="content ">
+                    <div class="bar bar-header item-input-inset customsearch">
+                        <label class="item-input-wrapper">
+                            <i class="icon ion-ios-search placeholder-icon"></i>
+                            <input type="search" placeholder="Search" ng-model="searchlist">
+                        </label>
+                    </div>
+
+                    <div class="list animate-fade-slide-in-right" ng-repeat="museum in museumList|orderBy:'distance' |  filter:searchlist">
+                        <a class="item item-avatar item-icon-right waves-effect waves-button waves-dark in done" href='#/event/Details/{{museum.Id}}'>
+                            <img src="{{museum.PhotoUrl}}">
+                            <h2>{{museum.Title}}</h2>
+                            <p>{{museum.Address}}</p>
+                            <p>Distance: {{museum.distance}} km</p>
+                            <i class="icon ion-ios-arrow-forward muted"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+            </ion-content>
+        </ion-view>
+    </script>
+
+    <script id="templates/Details.html" type="text/ng-template">
+        <ion-view view-title="Museum Details">
+            <ion-content>
+                <ion-view view-title="Museum Details">
+                    <ion-content>
+
+                        <div class="hero has-mask " style="background-image: url({{museum.photo}});background-size: cover;background-repeat: no-repeat;background-position: center center;">
+                            <div class="content">
+                                <button class="button button-large button-clear flat waves-effect waves-button waves-light icon ion-heart pull-right text-white"></button>
+                                <button class="button button-large button-clear flat waves-effect waves-button waves-light icon ion-images pull-right text-white"></button>
+                                <button class="button button-large button-clear flat waves-effect waves-button waves-light icon ion-map pull-right text-white" ng-click="driveMe({{museum.lat}},{{museum.long}},37.9684662,23.728498,{{museum.isIos}})"></button>
+                            </div>
+                        </div>
+                        <div class="mid-bar dark-bg z1 padding">
+                            <h3> {{museum.title}}</h3>
+                            <p>{{museum.address}}</p>
+                            <p>Distance: {{museum.distance}} km</p>
+
+
+                        </div>
+                        <div class="list card stable-bg">
+
+                            <div class="item item-body">
+                                <p> <span> <i class="icon ion-card cardiconcust"></i>  </span> {{museum.open}}</p>
+                                <p><span> <i class="icon ion-person-stalker cardiconcust"></i></span>{{museum.entrance}}</p>
+                                <p> <span> <i class="icon ion-ios-telephone cardiconcust"></i> </span>{{museum.phoneNumber}}</p>
+                                <p><span> <i class="icon ion-email cardiconcust"></i></span>{{museum.email}}</p>
+                                <p> <span><i class="icon ion-home cardiconcust"></i></span>{{museum.website}}</p>
+
+                            </div>
+
+                        </div>
+                        <div class="content double-padding">
+                            <h4 class="positive">{{museum.title}}</h4>
+                            <p class="text-muted">
+                                {{museum.description}}
+                            </p>
+
+
+                        </div>
+                    </ion-content>
+                </ion-view>
+            </ion-content>
+        </ion-view>
+    </script>
+
+
+</body>
+
+</html>
